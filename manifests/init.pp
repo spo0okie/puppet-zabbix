@@ -2,6 +2,7 @@ class zabbix {
 	case $::operatingsystem {
 		FreeBSD: {
 			$packagename='zabbix32-agent'
+			$servicename='zabbix_agentd'
 		}
 		CentOS: {
 			yumrepo { 'zabbix32_repo':
@@ -11,13 +12,22 @@ class zabbix {
 				before	=>	Package['zabbix-agent']
 			}
 			$packagename='zabbix-agent'
+			$servicename='zabbix-agent'
 		}
 		default: {
 			$packagename='zabbix32-agent'
+			$servicename='zabbix-agent'
 		}
 	}
 	package {'zabbix-agent':	
 		name	=>	$packagename,
 		ensure	=>	installed
+	} ->
+	file {'/var/log/zabbix/':
+		ensure	=> directory,
+		mode	=> '0777'
+	} ->
+	service {"$servicename":
+		ensure	=> running
 	}
 }
