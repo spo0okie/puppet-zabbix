@@ -21,13 +21,14 @@ class zabbix {
 	}
 	package {'zabbix-agent':	
 		name	=>	$packagename,
-		ensure	=>	installed
+		ensure	=>	latest
 	} ->
 	file {'/var/log/zabbix/':
-		ensure	=> directory,
-		mode	=> '0777'
+		ensure	=>	directory,
+		mode	=>	'0777'
 	} ->
 	service {"$servicename":
-		ensure	=> running
+		ensure	=>	running,
+		enable	=>	true
 	}
 }
