@@ -1,6 +1,6 @@
 class zabbix {
 	case $::operatingsystem {
-		CentOS: {
+		"CentOS": {
 			yumrepo { 'zabbix32_repo':
 				descr	=>	"Zabbix Official Repository - ${::architecture}",
 				enabled	=>	1,
