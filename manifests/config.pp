@@ -3,7 +3,7 @@ class zabbix::config (
 	$serverActive = '127.0.0.1'
 ) {
 	case $::operatingsystem {
-		FreeBSD: {
+		"FreeBSD": {
 			$confpath='/usr/local/etc/zabbix32/zabbix_agentd.conf'
 		}
 		default: {

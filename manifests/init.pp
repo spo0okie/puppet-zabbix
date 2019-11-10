@@ -10,9 +10,9 @@ class zabbix {
 			}
 			yumrepo { 'zabbix_non_supported':
 				descr	=>	"Zabbix Official Repository non-supported - ${::architecture}",
-				baseurl	=>	"http://repo.zabbix.com/non-supported/rhel/7/${::architecture}/",
+				baseurl	=>	"http://repo.zabbix.com/non-supported/rhel/${::operatingsystemmajrelease}/${::architecture}/",
 				enabled	=>	1,
-				gpgcheck=>	1,
+				gpgcheck=>	0,
 				before	=>	Package['zabbix-agent']
 			}
 			$packagename='zabbix-agent'
@@ -23,7 +23,7 @@ class zabbix {
 			$servicename='zabbix-agent'
 		}
 	}
-	package {'zabbix-agent':	
+	package {'zabbix-agent':
 		name	=>	$packagename,
 		ensure	=>	latest
 	} ->
