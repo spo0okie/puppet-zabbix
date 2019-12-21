@@ -3,7 +3,7 @@ class zabbix::config (
 	$serverActive = '127.0.0.1'
 ) {
 	case $::operatingsystem {
-		"FreeBSD": {
+		'FreeBSD': {
 			$confpath='/usr/local/etc/zabbix32/zabbix_agentd.conf'
 		}
 		default: {
@@ -19,6 +19,8 @@ class zabbix::config (
 	$config={
 		''=>{
 			'Hostname'				=>"${::fqdn}",
+			'LogFile'				=>'/var/log/zabbix/zabbix_agentd.log',
+			'PidFile'				=>'/var/run/zabbix/zabbix_agentd.pid',
 			'LogFile'				=>'/var/log/zabbix/zabbix_agentd.log',
 			'LogFileSize'			=>5,
 			'EnableRemoteCommands'	=>1,
