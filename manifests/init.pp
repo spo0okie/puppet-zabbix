@@ -1,10 +1,10 @@
 class zabbix {
 	case $::operatingsystem {
-		FreeBSD: {
+		'FreeBSD': {
 			$packagename='zabbix32-agent'
 			$servicename='zabbix_agentd'
 		}
-		CentOS: {
+		'CentOS': {
 			yumrepo { 'zabbix32_repo':
 				enabled	=>	1,
 				baseurl	=>	"http://repo.zabbix.com/zabbix/3.2/rhel/${::operatingsystemmajrelease}/${::architecture}",
@@ -15,7 +15,7 @@ class zabbix {
 			$servicename='zabbix-agent'
 		}
 		default: {
-			$packagename='zabbix32-agent'
+			$packagename='zabbix-agent'
 			$servicename='zabbix-agent'
 		}
 	}
