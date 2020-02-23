@@ -1,4 +1,5 @@
 class zabbix {
+	include repos::zabbix
 	case $::operatingsystem {
 		'FreeBSD': {
 			$packagename='zabbix32-agent'
@@ -19,7 +20,7 @@ class zabbix {
 			$servicename='zabbix-agent'
 		}
 	}
-	package {'zabbix-agent':	
+	package {'zabbix-agent':
 		name	=>	$packagename,
 		ensure	=>	latest
 	} ->
