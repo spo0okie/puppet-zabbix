@@ -6,12 +6,6 @@ class zabbix {
 			$servicename='zabbix_agentd'
 		}
 		'CentOS': {
-			yumrepo { 'zabbix32_repo':
-				enabled	=>	1,
-				baseurl	=>	"http://repo.zabbix.com/zabbix/3.2/rhel/${::operatingsystemmajrelease}/${::architecture}",
-				gpgcheck=>	0,
-				before	=>	Package['zabbix-agent']
-			}
 			$packagename='zabbix-agent'
 			$servicename='zabbix-agent'
 		}
