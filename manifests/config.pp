@@ -10,10 +10,17 @@ class zabbix::config (
 			$confpath='/etc/zabbix/zabbix_agentd.conf'
 		}
 	}
+	file {'/etc/zabbix/zabbix_agentd.d':
+		ensure	=>	directory,
+		mode	=>	'0755'
+	}
 	$config_defaults={
 		path	=>	$confpath,
 		ensure	=>	present,
-		require	=>	Package["${zabbix::packagename}"],
+		require	=>	[
+			Package["${zabbix::packagename}"],
+			File['/etc/zabbix/zabbix_agentd.d'],
+		],
 		notify	=>	Service["${zabbix::servicename}"]
 	}
 	$config={
@@ -33,9 +40,5 @@ class zabbix::config (
 			'ServerActive'			=>"$serverActive"
 		}
 	}
-	file {'/etc/zabbix/zabbix_agentd.d':
-		ensure	=>	directory,
-		mode	=>	'0755'
-	} ->
 	create_ini_settings ($config,$config_defaults)
 }
