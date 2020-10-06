@@ -22,13 +22,12 @@ class zabbix::config (
 			'HostInterface'			=>"${::fqdn}",
 			'HostMetadataItem'		=>"system.uname",
 			'LogFile'				=>'/var/log/zabbix/zabbix_agentd.log',
-			'PidFile'				=>'/var/run/zabbix/zabbix_agentd.pid',
-			'LogFile'				=>'/var/log/zabbix/zabbix_agentd.log',
-			'LogFileSize'			=>5,
+			#'PidFile'				=>'/var/run/zabbix/zabbix_agentd.pid',
+			'LogFileSize'			=>1,
 			'EnableRemoteCommands'	=>1,
-			'LogRemoteCommands'		=>1,
+			'LogRemoteCommands'		=>0,
 			'UnsafeUserParameters'	=>1,
-			'Timeout'				=>20,
+			'Timeout'				=>30,
 			'Server'				=>"$server",
 			'ServerActive'			=>"$serverActive"
 		}
