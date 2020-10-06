@@ -13,12 +13,14 @@ class zabbix::config (
 	$config_defaults={
 		path	=>	$confpath,
 		ensure	=>	present,
-		require	=>	Package['zabbix-agent'],
+		require	=>	Package["${zabbix::packagename}"],
 		notify	=>	Service["${zabbix::servicename}"]
 	}
 	$config={
 		''=>{
 			'Hostname'				=>"${::fqdn}",
+			'HostInterface'			=>"${::fqdn}",
+			'HostMetadataItem'		=>"system.uname",
 			'LogFile'				=>'/var/log/zabbix/zabbix_agentd.log',
 			'PidFile'				=>'/var/run/zabbix/zabbix_agentd.pid',
 			'LogFile'				=>'/var/log/zabbix/zabbix_agentd.log',
