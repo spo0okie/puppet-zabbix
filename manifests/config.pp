@@ -23,7 +23,7 @@ class zabbix::config (
 			'HostMetadataItem'		=>"system.uname",
 			'LogFile'				=>'/var/log/zabbix/zabbix_agentd.log',
 			#'PidFile'				=>'/var/run/zabbix/zabbix_agentd.pid',
-			'Include'				=>'/etc/zabbix/zabbix_agentd.d',
+			'Include'				=>'/etc/zabbix/zabbix_agentd.d/*.conf',
 			'LogFileSize'			=>1,
 			'EnableRemoteCommands'	=>1,
 			'LogRemoteCommands'		=>0,
