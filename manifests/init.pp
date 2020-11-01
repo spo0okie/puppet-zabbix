@@ -1,6 +1,10 @@
 class zabbix (
 	$ver = latest,	#версия заббикса
 ) {
+#согласно документации версию пакета надо указывать или "latest"
+#или прям полностью вместе со всеми суфиксам и прочими афексами
+#т.е. для каждого дистра придется расписывать индивидуально. что гемор
+#поэтому latest или надо городить более сложную обвязку
 	include repos::zabbix
 	case $::operatingsystem {
 		'FreeBSD': {
@@ -18,7 +22,7 @@ class zabbix (
 	}
 	package {'zabbix-agent':
 		name	=>	$packagename,
-		ensure	=>	latest
+		ensure	=>	$ver
 	} ->
 	file {'/var/log/zabbix/':
 		ensure	=>	directory,
