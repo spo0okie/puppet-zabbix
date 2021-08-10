@@ -18,10 +18,10 @@ class zabbix::config (
 		path	=>	$confpath,
 		ensure	=>	present,
 		require	=>	[
-			Package["${zabbix::packagename}"],
+			Package[$zabbix::packagename],
 			File['/etc/zabbix/zabbix_agentd.d'],
 		],
-		notify	=>	Service["${zabbix::servicename}"]
+		notify	=>	Service[$zabbix::servicename]
 	}
 	$config={
 		''=>{

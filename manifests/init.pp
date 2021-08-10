@@ -26,7 +26,7 @@ class zabbix (
 	} ->
 	file {'/var/log/zabbix/':
 		ensure	=>	directory,
-		mode	=>	'0777'
+		mode	=>	'0770' #если сделать 777 - logrotate начнет ругаться, что неправильные права
 	} ->
 	service {"$servicename":
 		ensure	=>	running,
