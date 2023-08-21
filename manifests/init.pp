@@ -26,7 +26,8 @@ class zabbix (
 	} ->
 	file {'/var/log/zabbix/':
 		ensure	=>	directory,
-		mode	=>	'0700' #если сделать 777 - logrotate начнет ругаться, что неправильные права
+		mode	=>	'0700', #если сделать 777 - logrotate начнет ругаться, что неправильные права
+		owner	=>	'zabbix'
 	} ->
 	service {"$servicename":
 		ensure	=>	running,

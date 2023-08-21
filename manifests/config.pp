@@ -32,9 +32,8 @@ class zabbix::config (
     notify  =>  Service[$zabbix::servicename]
   }
   $config={
-    ''=>{
-      'Hostname'              =>"${::fqdn}",
-      'HostInterface'         =>"${::fqdn}",
+      'Hostname'              =>downcase("${::fqdn}"),
+      'HostInterface'         =>downcase("${::fqdn}"),
       'HostMetadataItem'      =>"system.uname",
       'LogFile'               =>'/var/log/zabbix/zabbix_agentd.log',
       'PidFile'               =>'/run/zabbix/zabbix_agentd.pid',
@@ -46,19 +45,19 @@ class zabbix::config (
       'Timeout'               =>30,
       'Server'                =>"$server",
       'ServerActive'          =>"$serverActive",
-    }
   }
   if $pskIdentity == undef {
-    $pskConf={}
+    $pskConf={
+        'TLSAccept'           =>'unencrypted',
+        'TLSConnect'          =>'unencrypted',
+    }
   } else {
     $pskConf={
-      ''=>{
-        'TLSAccept'           =>'psk',
+        'TLSAccept'           =>'unencrypted,psk',
         'TLSConnect'          =>'psk',
         'TLSPSKIdentity'      =>$pskIdentity,
         'TLSPSKFile'          =>'/etc/zabbix/key/agent-key.psk'
-      }
     }
   }
-  create_ini_settings ($config,$config_defaults)
+  create_ini_settings (''=>$config+$pskConf,$config_defaults)
 }
