@@ -40,8 +40,8 @@ class zabbix::config (
     notify  =>  Service[$zabbix::servicename]
   }
   $config={
-    'Hostname'              =>"${::fqdn}",
-    'HostInterface'         =>"${::fqdn}",
+    'Hostname'              =>downcase("${::fqdn}"),
+    'HostInterface'         =>downcase("${::fqdn}"),
     'HostMetadataItem'      =>"system.uname",
     'LogFile'               =>'/var/log/zabbix/zabbix_agentd.log',
     'PidFile'               =>'/run/zabbix/zabbix_agentd.pid',
@@ -55,7 +55,10 @@ class zabbix::config (
     'ServerActive'          =>"$serverActive",
   }
   if $pskIdentity == undef {
-    $pskConf={}
+    $pskConf={
+        'TLSAccept'           =>'unencrypted',
+        'TLSConnect'          =>'unencrypted',
+    }
   } else {
     file {'/etc/zabbix/key':
       ensure  =>  directory,
