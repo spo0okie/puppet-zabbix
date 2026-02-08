@@ -20,7 +20,7 @@ class zabbix::config (
     mode    =>  '0755'
   }
   file {'/etc/zabbix/key/agent-key.psk':
-    source  => 'puppet:///code_files/zabbix/agent-key.psk'
+    source  => "puppet:///code_files/zabbix/agent-key.psk"
   }
   $config_defaults={
     path    =>  $confpath,
@@ -51,9 +51,11 @@ class zabbix::config (
         'TLSAccept'           =>'unencrypted',
         'TLSConnect'          =>'unencrypted',
     }
+  } elsif $pskIdentity == 'disabled' {
+    $pskConf={}
   } else {
     $pskConf={
-        'TLSAccept'           =>'unencrypted,psk',
+        'TLSAccept'           =>'psk',
         'TLSConnect'          =>'psk',
         'TLSPSKIdentity'      =>$pskIdentity,
         'TLSPSKFile'          =>'/etc/zabbix/key/agent-key.psk'
