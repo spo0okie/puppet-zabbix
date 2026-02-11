@@ -1,3 +1,4 @@
+#Класс настройки заббикса
 class zabbix::config (
   $server = '127.0.0.1',
   $serverActive = '127.0.0.1',
@@ -11,53 +12,56 @@ class zabbix::config (
       $confpath='/etc/zabbix/zabbix_agentd.conf'
     }
   }
-  file {'/etc/zabbix/zabbix_agentd.d':
-    ensure  =>  directory,
-    mode    =>  '0755'
+  $runtime_dir = $facts['runtime_dir']
+  file { '/etc/zabbix/zabbix_agentd.d':
+    ensure  => directory,
+    mode    => '0755',
   }
-  file {'/etc/zabbix/key':
-    ensure  =>  directory,
-    mode    =>  '0755'
+  file { '/etc/zabbix/key':
+    ensure  => directory,
+    mode    => '0755',
   }
-  file {'/etc/zabbix/key/agent-key.psk':
-    source  => 'puppet:///code_files/zabbix/agent-key.psk'
+  file { '/etc/zabbix/key/agent-key.psk':
+    source  => "puppet:///code_files/zabbix/agent-key.psk"
   }
   $config_defaults={
-    path    =>  $confpath,
-    ensure  =>  present,
-    require =>  [
+    path    => $confpath,
+    ensure  => present,
+    require => [
       Package[$zabbix::packagename],
       File['/etc/zabbix/zabbix_agentd.d'],
     ],
-    notify  =>  Service[$zabbix::servicename]
+    notify  => Service[$zabbix::servicename]
   }
   $config={
-      'Hostname'              =>downcase("${::fqdn}"),
-      'HostInterface'         =>downcase("${::fqdn}"),
-      'HostMetadataItem'      =>"system.uname",
-      'LogFile'               =>'/var/log/zabbix/zabbix_agentd.log',
-      'PidFile'               =>'/run/zabbix/zabbix_agentd.pid',
-      'Include'               =>'/etc/zabbix/zabbix_agentd.d/*.conf',
-      'LogFileSize'           =>1,
-      'EnableRemoteCommands'  =>1,
-      'LogRemoteCommands'     =>0,
-      'UnsafeUserParameters'  =>1,
-      'Timeout'               =>30,
-      'Server'                =>"$server",
-      'ServerActive'          =>"$serverActive",
+    'Hostname'              => $::fqdn.downcase,
+    'HostInterface'         => $::fqdn.downcase,
+    'HostMetadataItem'      => "system.uname",
+    'LogFile'               => '/var/log/zabbix/zabbix_agentd.log',
+    'PidFile'               => "$runtime_dir/zabbix/zabbix_agentd.pid",
+    'Include'               => '/etc/zabbix/zabbix_agentd.d/*.conf',
+    'LogFileSize'           => 1,
+    'EnableRemoteCommands'  => 1,
+    'LogRemoteCommands'     => 0,
+    'UnsafeUserParameters'  => 1,
+    'Timeout'               => 30,
+    'Server'                => "$server",
+    'ServerActive'          => "$serverActive",
   }
   if $pskIdentity == undef {
-    $pskConf={
-        'TLSAccept'           =>'unencrypted',
-        'TLSConnect'          =>'unencrypted',
+    $pskConf = {
+      'TLSAccept'             => 'unencrypted',
+      'TLSConnect'            => 'unencrypted',
     }
+  } elsif $pskIdentity == 'disabled' {
+    $pskConf = {}
   } else {
-    $pskConf={
-        'TLSAccept'           =>'unencrypted,psk',
-        'TLSConnect'          =>'psk',
-        'TLSPSKIdentity'      =>$pskIdentity,
-        'TLSPSKFile'          =>'/etc/zabbix/key/agent-key.psk'
+    $pskConf = {
+        'TLSAccept'           => 'psk',
+        'TLSConnect'          => 'psk',
+        'TLSPSKIdentity'      => $pskIdentity,
+        'TLSPSKFile'          => '/etc/zabbix/key/agent-key.psk'
     }
   }
-  create_ini_settings (''=>$config+$pskConf,$config_defaults)
+  create_ini_settings (''=> $config + $pskConf, $config_defaults)
 }
