@@ -8,7 +8,7 @@ class zabbix (
 #поэтому latest или надо городить более сложную обвязку
   include repos::zabbix
   $runtime_dir = $facts['runtime_dir']
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'FreeBSD': {
       $packagename='zabbix32-agent'
       $servicename='zabbix_agentd'
@@ -18,7 +18,7 @@ class zabbix (
       $servicename='zabbix-agent'
     }
   }
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'XenServer': {
       package { 'zabbix-agent':
         ensure          => installed,

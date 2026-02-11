@@ -14,31 +14,31 @@ class zabbix::config (
   }
   $runtime_dir = $facts['runtime_dir']
   file { '/etc/zabbix/zabbix_agentd.d':
-    ensure  => directory,
-    mode    => '0755',
+    ensure => directory,
+    mode   => '0755',
   }
   file { '/etc/zabbix/key':
-    ensure  => directory,
-    mode    => '0755',
+    ensure => directory,
+    mode   => '0755',
   }
   file { '/etc/zabbix/key/agent-key.psk':
-    source  => "puppet:///code_files/zabbix/agent-key.psk"
+    source  => 'puppet:///code_files/zabbix/agent-key.psk'
   }
-  $config_defaults={
+  $config_defaults = {
     path    => $confpath,
     ensure  => present,
     require => [
       Package[$zabbix::packagename],
       File['/etc/zabbix/zabbix_agentd.d'],
     ],
-    notify  => Service[$zabbix::servicename]
+    notify  => Service[$zabbix::servicename],
   }
-  $config={
-    'Hostname'              => $::fqdn.downcase,
-    'HostInterface'         => $::fqdn.downcase,
-    'HostMetadataItem'      => "system.uname",
+  $config = {
+    'Hostname'              => $facts['networking']['fqdn'].downcase,
+    'HostInterface'         => $facts['networking']['fqdn'].downcase,
+    'HostMetadataItem'      => 'system.uname',
     'LogFile'               => '/var/log/zabbix/zabbix_agentd.log',
-    'PidFile'               => "$runtime_dir/zabbix/zabbix_agentd.pid",
+    'PidFile'               => "${runtime_dir}/zabbix/zabbix_agentd.pid",
     'Include'               => '/etc/zabbix/zabbix_agentd.d/*.conf',
     'LogFileSize'           => 1,
     'EnableRemoteCommands'  => 1,
