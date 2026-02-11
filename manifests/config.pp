@@ -57,10 +57,10 @@ class zabbix::config (
     $pskConf = {}
   } else {
     $pskConf = {
-        'TLSAccept'           => 'psk',
-        'TLSConnect'          => 'psk',
-        'TLSPSKIdentity'      => $pskIdentity,
-        'TLSPSKFile'          => '/etc/zabbix/key/agent-key.psk'
+      'TLSAccept'           => 'psk',
+      'TLSConnect'          => 'psk',
+      'TLSPSKIdentity'      => $pskIdentity,
+      'TLSPSKFile'          => '/etc/zabbix/key/agent-key.psk',
     }
   }
   create_ini_settings (''=> $config + $pskConf, $config_defaults)
