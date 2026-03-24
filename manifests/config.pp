@@ -42,8 +42,8 @@ class zabbix::config (
     notify  => Service[$zabbix::servicename],
   }
   $config = {
-    'Hostname'              => $facts['networking']['fqdn'].downcase,
-    'HostInterface'         => $facts['networking']['fqdn'].downcase,
+    'Hostname'              => ($facts['networking']['fqdn']).downcase,
+    'HostInterface'         => ($facts['networking']['fqdn']).downcase,
     'HostMetadataItem'      => 'system.uname',
     'LogFile'               => '/var/log/zabbix/zabbix_agentd.log',
     'PidFile'               => "${runtime_dir}/zabbix/zabbix_agentd.pid",
