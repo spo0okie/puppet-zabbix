@@ -8,32 +8,11 @@ class zabbix (
 #поэтому latest или надо городить более сложную обвязку
   include repos::zabbix
   $runtime_dir = $facts['runtime_dir']
-  case $facts['os']['name'] {
-    'FreeBSD': {
-      $packagename='zabbix32-agent'
-      $servicename='zabbix_agentd'
-    }
-    default: {
-      $packagename='zabbix-agent'
-      $servicename='zabbix-agent'
-    }
-  }
-  case $facts['os']['name'] {
-    'XenServer': {
-      package { 'zabbix-agent':
-        ensure          => installed,
-        name            => $packagename,
-        provider        => rpm,
-        source          => 'http://storage-docker.azimuth.holding.local/Zabbix/rhel5/zabbix-agent-6.0.9-release1.el5.x86_64.rpm',
-        install_options => ['--httpproxy','klg-proxy.azimuth.holding.local', '--httpport', '3128'],
-      }
-    }
-    default: {
-      package { 'zabbix-agent':
-        ensure => $ver,
-        name   => $packagename,
-      }
-    }
+  $packagename='zabbix-agent'
+  $servicename='zabbix-agent'
+  package { 'zabbix-agent':
+    ensure => $ver,
+    name   => $packagename,
   }
   -> file { '/var/log/zabbix/':
     ensure => directory,

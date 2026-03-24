@@ -1,18 +1,26 @@
 #Класс настройки заббикса
+# @param server Zabbix server address
+# @param serverActive Active Zabbix server address
+# @param pskIdentity Pre-shared key identity for TLS communication
 class zabbix::config (
-  $server = '127.0.0.1',
-  $serverActive = '127.0.0.1',
-  $pskIdentity = undef
+  String $server = '127.0.0.1',
+  String $serverActive = '127.0.0.1',
+  Optional[String] $pskIdentity = undef
 ) {
-  case $::operatingsystem {
-    'FreeBSD': {
-      $confpath='/usr/local/etc/zabbix32/zabbix_agentd.conf'
-    }
-    default: {
-      $confpath='/etc/zabbix/zabbix_agentd.conf'
-    }
-  }
+  include zabbix
+  $confpath='/etc/zabbix/zabbix_agentd.conf'
   $runtime_dir = $facts['runtime_dir']
+  $os_name = $facts['os']['name']
+  $os_release_major = $facts['os']['release']['major']
+
+  # Для XenServer 6 и CentOS 5 отключаем TLS
+  if $os_name == 'XenServer' and $os_release_major == '6' {
+    $effective_psk_identity = 'disabled'
+  } elsif $os_name == 'CentOS' and $os_release_major == '5' {
+    $effective_psk_identity = 'disabled'
+  } else {
+    $effective_psk_identity = $pskIdentity
+  }
   file { '/etc/zabbix/zabbix_agentd.d':
     ensure => directory,
     mode   => '0755',
@@ -21,8 +29,8 @@ class zabbix::config (
     ensure => directory,
     mode   => '0755',
   }
-  file { '/etc/zabbix/key/agent-key.psk':
-    source  => 'puppet:///code_files/zabbix/agent-key.psk'
+  -> file { '/etc/zabbix/key/agent-key.psk':
+    source  => 'puppet:///modules/zabbix/keys/agent-key.psk',
   }
   $config_defaults = {
     path    => $confpath,
@@ -45,23 +53,25 @@ class zabbix::config (
     'LogRemoteCommands'     => 0,
     'UnsafeUserParameters'  => 1,
     'Timeout'               => 30,
-    'Server'                => "$server",
-    'ServerActive'          => "$serverActive",
+    'Server'                => $server,
+    'ServerActive'          => $serverActive,
   }
-  if $pskIdentity == undef {
-    $pskConf = {
+
+  if $effective_psk_identity == undef {
+    $psk_conf = {
       'TLSAccept'             => 'unencrypted',
       'TLSConnect'            => 'unencrypted',
     }
-  } elsif $pskIdentity == 'disabled' {
-    $pskConf = {}
+  } elsif $effective_psk_identity == 'disabled' {
+    $psk_conf = {}
   } else {
-    $pskConf = {
+    $psk_conf = {
       'TLSAccept'           => 'psk',
       'TLSConnect'          => 'psk',
       'TLSPSKIdentity'      => $pskIdentity,
       'TLSPSKFile'          => '/etc/zabbix/key/agent-key.psk',
     }
   }
-  create_ini_settings (''=> $config + $pskConf, $config_defaults)
+
+  create_ini_settings (''=> $config + $psk_conf, $config_defaults)
 }
