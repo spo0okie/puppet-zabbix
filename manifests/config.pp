@@ -8,20 +8,28 @@ class zabbix::config (
   Optional[String] $pskIdentity = undef
 ) {
   include zabbix
-  $confpath='/etc/zabbix/zabbix_agentd.conf'
-  $runtime_dir = $facts['runtime_dir']
+  $confpath    = $zabbix::confpath
+  $include_dir = $zabbix::include_dir
+  $pidfile     = $zabbix::pidfile
+  $logfile     = $zabbix::logfile
   $os_name = $facts['os']['name']
   $os_release_major = $facts['os']['release']['major']
 
-  # Для XenServer 6 и CentOS 5 отключаем TLS
-  if $os_name == 'XenServer' and $os_release_major == '6' {
-    $effective_psk_identity = 'disabled'
-  } elsif $os_name == 'CentOS' and $os_release_major == '5' {
+  # Старые ОС с устаревшими версиями zabbix-agent:
+  # - не поддерживают TLS (XenServer 6, CentOS 5)
+  # - не понимают AllowKey/DenyKey (XenServer 6, CentOS 5)
+  # CentOS 6 здесь нет: agent версии 5.0 на EL6 уже понимает AllowKey
+  # и TLS, поэтому legacy-обработка конфига не нужна (фолбэк на classic
+  # для EL6 выполняется на уровне zabbix-класса по другой причине —
+  # ненадёжная доступность zabbix-agent2 в локальном зеркале).
+  $legacy_os = ($os_name == 'XenServer' and $os_release_major == '6') or ($os_name == 'CentOS' and $os_release_major == '5')
+
+  if $legacy_os {
     $effective_psk_identity = 'disabled'
   } else {
     $effective_psk_identity = $pskIdentity
   }
-  file { '/etc/zabbix/zabbix_agentd.d':
+  file { $include_dir:
     ensure => directory,
     mode   => '0755',
   }
@@ -37,25 +45,36 @@ class zabbix::config (
     ensure  => present,
     require => [
       Package[$zabbix::packagename],
-      File['/etc/zabbix/zabbix_agentd.d'],
+      File[$include_dir],
     ],
     notify  => Service[$zabbix::servicename],
   }
   $fqdn=($facts['networking']['fqdn'].downcase)
-  $config = {
+  $base_config = {
     'Hostname'              => $fqdn,
     'HostInterface'         => $fqdn,
     'HostMetadataItem'      => 'system.uname',
-    'LogFile'               => '/var/log/zabbix/zabbix_agentd.log',
-    'PidFile'               => "${runtime_dir}/zabbix/zabbix_agentd.pid",
-    'Include'               => '/etc/zabbix/zabbix_agentd.d/*.conf',
+    'LogFile'               => $logfile,
+    'PidFile'               => $pidfile,
+    'Include'               => "${include_dir}/*.conf",
     'LogFileSize'           => 1,
-    'EnableRemoteCommands'  => 1,
-    'LogRemoteCommands'     => 0,
     'UnsafeUserParameters'  => 1,
     'Timeout'               => 30,
     'Server'                => $server,
     'ServerActive'          => $serverActive,
+  }
+
+  # Remote commands: на старых ОС остаётся EnableRemoteCommands,
+  # на современных (включая zabbix-agent2) — AllowKey=system.run[*].
+  if $legacy_os {
+    $remote_cmd_conf = {
+      'EnableRemoteCommands' => 1,
+      'LogRemoteCommands'    => 0,
+    }
+  } else {
+    $remote_cmd_conf = {
+      'AllowKey' => 'system.run[*]',
+    }
   }
 
   if $effective_psk_identity == undef {
@@ -74,5 +93,5 @@ class zabbix::config (
     }
   }
 
-  create_ini_settings (''=> $config + $psk_conf, $config_defaults)
+  create_ini_settings (''=> $base_config + $remote_cmd_conf + $psk_conf, $config_defaults)
 }
