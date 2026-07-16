@@ -8,10 +8,11 @@ class zabbix::config (
   Optional[String] $pskIdentity = undef
 ) {
   include zabbix
-  $confpath    = $zabbix::confpath
-  $include_dir = $zabbix::include_dir
-  $pidfile     = $zabbix::pidfile
-  $logfile     = $zabbix::logfile
+  $confpath      = $zabbix::confpath
+  $include_dir   = $zabbix::include_dir
+  $pidfile       = $zabbix::pidfile
+  $logfile       = $zabbix::logfile
+  $agent_variant = $zabbix::effective_variant
   $os_name = $facts['os']['name']
   $os_release_major = $facts['os']['release']['major']
 
@@ -56,12 +57,32 @@ class zabbix::config (
     'HostMetadataItem'      => 'system.uname',
     'LogFile'               => $logfile,
     'PidFile'               => $pidfile,
-    'Include'               => "${include_dir}/*.conf",
     'LogFileSize'           => 1,
     'UnsafeUserParameters'  => 1,
     'Timeout'               => 30,
     'Server'                => $server,
     'ServerActive'          => $serverActive,
+  }
+
+  # на classic вклчаем include; на agent2 Include повторяются для разных папок и create_ini_settings ломает
+  if $agent_variant == 'classic' {
+    $include_conf = {
+      'Include' => "${include_dir}/*.conf",
+    }
+  } else {
+    $include_conf = {}
+    file_line { 'zabbix_include_main':
+      path  => $confpath,
+      line  => "Include=${include_dir}/*.conf",
+      match => '^Include=.*\.d/\*\.conf$',
+      notify => Service[$zabbix::servicename],
+    } ->
+    file_line { 'zabbix_include_plugins':
+      path  => $confpath,
+      line  => "Include=${include_dir}/plugins.d/*.conf",
+      match => '^Include=.*plugins\.d/\*\.conf$',
+      notify => Service[$zabbix::servicename],
+    }
   }
 
   # Remote commands: на старых ОС остаётся EnableRemoteCommands,
@@ -93,5 +114,5 @@ class zabbix::config (
     }
   }
 
-  create_ini_settings (''=> $base_config + $remote_cmd_conf + $psk_conf, $config_defaults)
+  inifile::create_ini_settings (''=> $base_config + $remote_cmd_conf + $psk_conf + $include_conf, $config_defaults)
 }
